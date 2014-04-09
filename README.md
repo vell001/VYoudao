@@ -14,6 +14,22 @@ VYoudao
 
 3. 几乎所有的配置信息都在`gl.py`文件中，为了更好的私人定制
 
+##技术细节
+1. 通过`xclip -o`管道获取鼠标选中的单词
+2. 根据单词得到youdao的查找链接, 如：[http://dict.youdao.com/search?q=vell001](http://dict.youdao.com/search?q=vell001)，其实有3种方法实现查找：
+	1. 原始html页面:  /serarch?q=hello  好处是, 这个页面是有道的主页，性能上应该是最好的（正在用）
+	2. open API: /openapi.do?q=hello    好处是json, 简单, 缺点是一般这种API服务器端都会有一些校验, 性能会较差.
+	3. chrome 插件用的API : /fsearch?q=hello  好处是性能, 格式好(xml)，坏处是太复杂了～
+3. 使用python的`urllib2`模块抓取源网页到内存（openyoudao是直接下载网页到硬盘）
+4. 再用`BeautifulSoup`模块分析源网页，查找到id为result的div（也就是youdao真正的结果div）
+5. 给这段div加上必要的标签，得到一个完整的html页面（openyoudao在加标签时也是全部在硬盘上操作）
+6. 此时当然也应该把前页面放到历史记录里了，我使用list实现的一个类似的循环队列来存储历史记录（openyoudao没有历史记录）
+7. 将完整的html页面通过webkit.WebView的load_html_string方法，直接在内存中渲染界面（openyoudao还是读取硬盘）
+8. 这就是整个运行过程，另外我还加了控制模块，通过在html里使用js改变html的title来传递指令（目前我知道的最巧妙的方法），在Webview里监控下title的变化，从而达到控制作用
+```
+self.connect('notify::title', title_changed)
+```
+
 ##安装
 
 * 基于openyoudao的升级安装（强烈推荐）
@@ -21,50 +37,11 @@ VYoudao
 	2. 再下载[VYoudao](https://github.com/vell001/VYoudao)，下载地址：[点我下载](https://github.com/vell001/VYoudao/archive/master.zip)
 	3. 只需要复制**lib**目录下的`fusionyoudao.py`, `gl.py`, `main.py`, `webshot.py`这四个文件到openyoudao的安装目录并覆盖就行（建议覆盖前先备份，默认安装目录在`/usr/lib/openyoudao`）.
 
-* 自己动手请参照openyoudao手动安装:
-{% codeblock lang:sh %}
-#apt-get install python-xlib python-webkit python-lxml  python-beautifulsoup xclip inotify-tools curl
-
-$git clone https://github.com/justzx2011/openyoudao
-
-安装bin文件，方便程序执行: 
-
-将bin文件：scripts/openyoudao安装到目录/usr/bin/openyoudao:
-
-#cp scripts/openyoudao /usr/bin/.
-
-设置权限：
-
-#chmod 755 /usr/bin/openyoudao
-
-安装libs文件: 
-
-#mkdir /usr/lib/openyoudao
-
-#cp ./*.py /usr/lib/openyoudao
-
-#chmod 644 /usr/lib/openyoudao/*.py
-
-安装cache文件:
-
-#mkdir /var/cache/openyoudao
-
-#cp -rf cache/* /var/cache/openyoudao/.
-
-安装desktop:
-
-#cp desktop/openyoudao.desktop /usr/share/applications/
-
-#chmod 644 /usr/share/applications/openyoudao.desktop
-
-哈哈～现在应该看到openyoudao的图标了吧～
-
-点击图标就能运行程序了
-{% endcodeblock %}
+* linux高手们可以试试手动安装，注意**share**和**lib**目录文件路径，在`gl.py`中有设置，只适合高手，不详述了。
 
 ##截图：
-![001](vblog.vell001.ml/images/20140409093509.png)
-![002](vblog.vell001.ml/images/20140409093745.png)
+![001](http://vblog.vell001.ml/images/20140409093509.png)
+![002](http://vblog.vell001.ml/images/20140409093745.png)
 
 ##参考：
 - [https://github.com/justzx2011/openyoudao](https://github.com/justzx2011/openyoudao)
