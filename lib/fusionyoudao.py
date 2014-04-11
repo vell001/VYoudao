@@ -25,22 +25,17 @@ def reconstruct():
     return result_html
 
 def update_results(result_html) : # 添加历史记录
-    if(len(gl.results) < gl.results_max_len and gl.result_flag < gl.results_max_len) :
-        if gl.result_flag == len(gl.results) - 1 :
-            gl.results.append(result_html)
-            gl.texts.append(gl.text)
-            
-            gl.result_flag = len(gl.results) - 1
-        else :
-            gl.result_flag = gl.result_flag + 1
-            
-            gl.results[gl.result_flag] = result_html
-            gl.texts[gl.result_flag] = gl.text
-    else :
-        gl.result_flag = gl.results_max_len-1
-        
-        gl.results[0:gl.result_flag] = gl.results[1:gl.results_max_len]
-        gl.texts[0:gl.result_flag] = gl.texts[1:gl.results_max_len]
-        
-        gl.results[gl.result_flag] = result_html
-        gl.texts[gl.result_flag] = gl.text
+	if len(gl.results) < gl.results_max_len : # 历史未满
+		if gl.result_flag >= len(gl.results) - 1 : # 是最后一条记录
+		    gl.results.append(result_html)
+		    gl.texts.append(gl.text)
+		    
+		gl.result_flag = gl.result_flag + 1
+	else: # 历史已满, 循环
+		if gl.result_flag >= gl.results_max_len - 1 :
+			gl.result_flag = 0
+		else :
+			gl.result_flag = gl.result_flag + 1
+		
+	gl.results[gl.result_flag] = result_html
+	gl.texts[gl.result_flag] = gl.text
